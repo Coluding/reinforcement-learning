@@ -46,6 +46,7 @@ class Model:
 
     def predict(self, s):
         x = self.featurizer.transform([s])[0]
+        # create festure vector of dimension 1000 for state s
         return x @ self.w
 
     def grad(self, s):
@@ -97,6 +98,8 @@ if __name__ == '__main__':
             if grid.is_terminal(s2):
                 target = r
             else:
+                # here we are bootstrapping again
+                # But instead of using the entry of the V table at position of s2 we use the linear model to predict Vs2
                 Vs2 = model.predict(s2)
                 target = r + GAMMA * Vs2
 
