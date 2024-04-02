@@ -75,8 +75,8 @@ class Agent:
         if not memory.ready():
             return
 
-        actor_states, states, actions, rewards,\
-            actor_new_states, states_, dones = memory.sample_buffer()
+        states, actor_states, actions, rewards,\
+            states_, actor_new_states, dones = memory.sample_buffer()
 
         device = self.actor.device
 
@@ -108,6 +108,7 @@ class Agent:
         critic_value = self.critic.forward(states, old_actions).squeeze()
         critic_loss = F.mse_loss(target, critic_value)
 
+        # this optimizes the q value approximation
         self.critic.optimizer.zero_grad()
         critic_loss.backward()
         T.nn.utils.clip_grad_norm_(self.critic.parameters(), 10.0)
@@ -124,6 +125,8 @@ class Agent:
         self.actor.optimizer.zero_grad()
         actor_loss.backward()
         T.nn.utils.clip_grad_norm_(self.actor.parameters(), 10.0)
+
+        # we are maximizing the q value by adjusting the actions suggested by the policy
         self.actor.optimizer.step()
 
         self.update_network_parameters()
